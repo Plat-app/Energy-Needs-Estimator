@@ -1,0 +1,284 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+
+/**
+ * Energy Needs Estimator — v1 (React + Tailwind)
+ * Scope (MVP):
+ * - W-only calculator (no VA/PF here). VA sizing γίνεται στο UPS Finder.
+ * - Dropdown βιβλιοθήκη με τυπικά Watt/συσκευή (χωρίς high‑inrush κατηγορίες).
+ * - Ποσότητα ανά item, editable Watt, διαγραφή.
+ * - Custom συσκευή (όνομα + Watt + qty).
+ * - Headroom επιλογή: 0 / 10 / 20 / 30% (default 20%).
+ * - Banner προειδοποίησης για μεγάλα ρεύματα εκκίνησης.
+ * - Ήπιο warning όταν η τιμή W σε «τυπική» συσκευή είναι ασυνήθιστα υψηλή.
+ * - LocalStorage.
+ * - CTA: «Συνέχεια στην επιλογή UPS» → prefill προς UPS Finder με ?w=.
+ */
+
+// ---------- Device Library (Safe / Low-Inrush) ----------
+const LIB = [
+  { key: "desktop_office", name: "Desktop PC (Office)", defaultW: 120, warnAbove: 300 },
+  { key: "gaming_mid", name: "Gaming PC (mid-range)", defaultW: 350, warnAbove: 800 },
+  { key: "gaming_high", name: "Gaming PC (hi-end)", defaultW: 600, warnAbove: 1200 },
+  { key: "laptop", name: "Laptop Charger", defaultW: 65, warnAbove: 180 },
+  { key: "monitor_24", name: "Monitor 24\"", defaultW: 20, warnAbove: 80 },
+  { key: "monitor_27", name: "Monitor 27\"", defaultW: 30, warnAbove: 120 },
+  { key: "router", name: "Router / Modem", defaultW: 12, warnAbove: 50 },
+  { key: "wifi_ap", name: "Wi‑Fi Access Point", defaultW: 9, warnAbove: 40 },
+  { key: "switch8", name: "Switch 8‑port (non‑PoE)", defaultW: 15, warnAbove: 60 },
+  { key: "nas2", name: "NAS 2‑bay", defaultW: 35, warnAbove: 120 },
+  { key: "tv_led_43", name: "LED TV 43\"", defaultW: 70, warnAbove: 250 },
+  { key: "pos", name: "POS Terminal", defaultW: 25, warnAbove: 100 },
+  { key: "receipt", name: "Receipt Printer (thermal)", defaultW: 20, warnAbove: 80 },
+  { key: "barcode", name: "Barcode Scanner", defaultW: 2, warnAbove: 20 },
+  { key: "ext_drive", name: "External HDD/SSD (USB)", defaultW: 8, warnAbove: 30 },
+  { key: "led_lamp", name: "LED Lamp", defaultW: 20, warnAbove: 60 },
+  { key: "voip_phone", name: "VoIP Phone", defaultW: 6, warnAbove: 15 },
+  // PoE endpoints ως ξεχωριστά items
+  { key: "poe_cam", name: "PoE Camera", defaultW: 8, warnAbove: 20 },
+  { key: "poe_ap", name: "PoE Access Point", defaultW: 15, warnAbove: 35 },
+];
+
+const HEADROOM_OPTIONS = [0, 10, 20, 30];
+const STORAGE_KEY = "tescom_load_builder_v1";
+
+function uid() { return Math.random().toString(36).slice(2, 10); }
+
+export default function App() {
+  const [headroom, setHeadroom] = useState(20);
+  const [items, setItems] = useState([]);
+  const [libKey, setLibKey] = useState("");
+  const [customName, setCustomName] = useState("");
+  const [customW, setCustomW] = useState("");
+  const [customQty, setCustomQty] = useState(1);
+
+  // Load/Save state
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.items)) {
+          setItems(parsed.items);
+        }
+        if (parsed && typeof parsed.headroom === "number") setHeadroom(parsed.headroom);
+      }
+    } catch (_) { /* noop */ }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ items, headroom }));
+    } catch (_) { /* noop */ }
+  }, [items, headroom]);
+
+  const totalW = useMemo(() => {
+    return items.reduce((acc, it) => acc + Math.max(0, Math.round(Number(it.w) || 0)) * Math.max(0, Number(it.qty) || 0), 0);
+  }, [items]);
+
+  const totalWithHeadroom = useMemo(() => {
+    return Math.round(totalW * (1 + headroom / 100));
+  }, [totalW, headroom]);
+
+  function addFromLibrary() {
+    const lib = LIB.find((x) => x.key === libKey);
+    if (!lib) return;
+    setItems((xs) => [
+      ...xs,
+      { id: uid(), name: lib.name, w: lib.defaultW, qty: 1, warnAbove: lib.warnAbove, source: "lib" },
+    ]);
+  }
+
+  function addCustom() {
+    const w = Math.round(Number(customW));
+    if (!customName.trim() || isNaN(w) || w <= 0) return;
+    setItems((xs) => [
+      ...xs,
+      { id: uid(), name: customName.trim(), w, qty: Math.max(1, Number(customQty) || 1), warnAbove: 400, source: "custom" },
+    ]);
+    setCustomName("");
+    setCustomW("");
+    setCustomQty(1);
+  }
+
+  function updateItem(id, patch) {
+    setItems((xs) => xs.map((it) => (it.id === id ? { ...it, ...patch } : it)));
+  }
+
+  function removeItem(id) {
+    setItems((xs) => xs.filter((it) => it.id !== id));
+  }
+
+  function clearAll() {
+    setItems([]);
+  }
+
+  function openUpsFinder() {
+    const base = "https://dazzling-dusk-ab5209.netlify.app/";
+    const url = `${base}?w=${encodeURIComponent(totalWithHeadroom)}`;
+    window.open(url, "_blank");
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* Header */}
+      <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 bg-white/70 border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-2xl bg-[#0971CE] text-white grid place-items-center font-bold">T</div>
+            <div>
+              <h1 className="text-xl font-semibold">Energy Needs Estimator</h1>
+              <p className="text-xs text-slate-500">v1 • Υπολόγισε τα συνολικά Watt του εξοπλισμού σου</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={clearAll} className="px-3 py-1.5 rounded-xl bg-[#0971CE] text-white text-sm hover:bg-[#0861B5]">Νέα λίστα</button>
+          </div>
+        </div>
+      </header>
+
+      {/* Warning banner (inrush disclaimer) */}
+      <div className="max-w-6xl mx-auto px-4 mt-4">
+        <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-amber-900 text-sm">
+          <p className="font-medium">Σημαντικό:</p>
+          <p className="mt-1">Συσκευές με <span className="font-semibold">μεγάλο ρεύμα εκκίνησης</span> (π.χ. laser εκτυπωτές, μοτέρ, συμπιεστές, κλιματιστικά) <span className="font-semibold">δεν προτείνεται</span> να τροφοδοτούνται από UPS <span className="font-semibold">χωρίς μελέτη</span> και <span className="font-semibold">πραγματική μέτρηση ρεύματος εκκίνησης</span>. Για αξιολόγηση, επικοινώνησε με την Tescom.</p>
+        </div>
+      </div>
+
+      {/* Main */}
+      <main className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left: Add devices */}
+        <aside className="lg:col-span-5">
+          <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-5 space-y-6">
+            <h2 className="text-base font-semibold">Προσθήκη συσκευών</h2>
+
+            {/* From Library */}
+            <div>
+              <label className="text-sm font-medium">Από βιβλιοθήκη (τυπικά Watt)</label>
+              <div className="mt-2 flex gap-2">
+                <select value={libKey} onChange={(e) => setLibKey(e.target.value)} className={`flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm ${!libKey ? 'text-slate-400' : ''}`}>
+                  <option value="" disabled>Επέλεξε την συσκευή σου</option>
+                  {LIB.map((d) => (
+                    <option key={d.key} value={d.key}>{d.name} — {d.defaultW}W</option>
+                  ))}
+                </select>
+                <button onClick={addFromLibrary} aria-label="Προσθήκη" title="Προσθήκη" className="w-10 h-10 grid place-items-center rounded-xl bg-[#0971CE] text-white text-base hover:bg-[#0861B5] shrink-0">+</button>
+              </div>
+              <p className="text-xs text-slate-500 mt-2">Οι τιμές είναι ενδεικτικές. Μπορείς να τις αλλάξεις μετά την προσθήκη.</p>
+            </div>
+
+            {/* Custom */}
+            <div>
+              <label className="text-sm font-medium">Custom συσκευή (για μεγαλύτερη ακρίβεια)</label>
+              <div className="mt-2 flex gap-2 items-center">
+                <input placeholder="Όνομα" value={customName} onChange={(e) => setCustomName(e.target.value)} className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+                <input placeholder="W" type="number" min={1} value={customW} onChange={(e) => setCustomW(e.target.value)} className="w-[4.5rem] rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+                <input placeholder="Ποσ." type="number" min={1} value={customQty} onChange={(e) => setCustomQty(Number(e.target.value) || 1)} className="w-16 rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+                <button onClick={addCustom} aria-label="Προσθήκη" title="Προσθήκη" className="w-10 h-10 grid place-items-center rounded-xl bg-[#0971CE] text-white text-base hover:bg-[#0861B5] shrink-0">+</button>
+              </div>
+              <p className="text-xs text-slate-500 mt-2">Αν γνωρίζεις τα ακριβή Watt της συσκευής, βάλε τα εδώ για μέγιστη ακρίβεια.</p>
+            </div>
+
+            {/* Headroom */}
+            <div>
+              <label className="text-sm font-medium">Επιπλέον για ασφάλεια (headroom)</label>
+              <div className="mt-2 flex gap-2">
+                {HEADROOM_OPTIONS.map((h) => (
+                  <button key={h} onClick={() => setHeadroom(h)} className={["px-3 py-1.5 rounded-xl text-sm border", headroom === h ? "bg-[#0971CE] text-white border-[#0971CE]" : "bg-white text-[#0971CE] border-[#0971CE] hover:bg-[#E6F1FB]"].join(" ")}>{h}%</button>
+                ))}
+              </div>
+              <p className="text-xs text-slate-500 mt-2">Default: 20% (ισορροπία ασφάλειας/κόστους). Μπορείς να το αλλάξεις.</p>
+            </div>
+          </div>
+        </aside>
+
+        {/* Right: List & totals */}
+        <section className="lg:col-span-7">
+          <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-5">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <h2 className="text-base font-semibold">Λίστα συσκευών</h2>
+                <p className="text-sm text-slate-500">Επεξεργάσιμα Watt & ποσότητες. Μόνο Watt εδώ — VA θα υπολογιστούν στο UPS Finder.</p>
+              </div>
+            </div>
+
+            {/* Items table */}
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-slate-500">
+                    <th className="py-2 pr-3">Συσκευή</th>
+                    <th className="py-2 pr-3 w-28">W</th>
+                    <th className="py-2 pr-3 w-24">Ποσ.</th>
+                    <th className="py-2 pr-3 w-32">Σύνολο</th>
+                    <th className="py-2 pr-3 w-24"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-6 text-center text-slate-500">Δεν έχουν προστεθεί συσκευές ακόμη.</td>
+                    </tr>
+                  )}
+
+                  {items.map((it, idx) => (
+                    <motion.tr key={it.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.015 * idx }} className="border-t border-slate-100">
+                      <td className="py-2 pr-3">
+                        <div className="font-medium">{it.name}</div>
+                        {Number(it.w) > (it.warnAbove || Infinity) && (
+                          <div className="text-xs text-amber-700">Προειδοποίηση: ασυνήθιστα πολλά Watt για αυτή τη συσκευή.</div>
+                        )}
+                      </td>
+                      <td className="py-2 pr-3">
+                        <input type="number" min={1} value={it.w} onChange={(e) => updateItem(it.id, { w: Math.max(1, Math.round(Number(e.target.value) || 0)) })} className="w-24 rounded-xl border border-slate-300 px-2 py-1" />
+                      </td>
+                      <td className="py-2 pr-3">
+                        <input type="number" min={1} value={it.qty} onChange={(e) => updateItem(it.id, { qty: Math.max(1, Math.round(Number(e.target.value) || 1)) })} className="w-20 rounded-xl border border-slate-300 px-2 py-1" />
+                      </td>
+                      <td className="py-2 pr-3">
+                        <div className="font-medium">{it.w * it.qty} W</div>
+                      </td>
+                      <td className="py-2 pr-3 text-right">
+                        <button onClick={() => removeItem(it.id)} className="px-2 py-1 rounded-lg bg-[#0971CE] text-white text-xs hover:bg-[#0861B5] whitespace-nowrap">Διαγραφή</button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Totals */}
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Stat label="Σύνολο Watt" value={`${totalW} W`} />
+              <Stat label={`+${headroom}% headroom`} value={`${Math.round(totalW * headroom / 100)} W`} subtle />
+              <Stat label="Προτεινόμενα Watt (με ασφάλεια)" value={`${totalWithHeadroom} W`} highlight />
+            </div>
+
+            {/* CTA */}
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <button onClick={openUpsFinder} className="px-4 py-2 rounded-xl bg-[#0971CE] text-white text-sm hover:bg-[#0861B5]">Συνέχεια στην επιλογή UPS</button>
+              <span className="text-xs text-slate-500">Θα προ‑συμπληρώσουμε τα Watt στο UPS Finder.</span>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="max-w-6xl mx-auto px-4 pb-10 text-xs text-slate-500">
+        <div className="mt-2">
+          <p>© Tescom Hellas — Εργαλείο υπολογισμού φορτίου (W).</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function Stat({ label, value, highlight, subtle }) {
+  return (
+    <div className={["rounded-2xl border p-4", highlight ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200"].join(" ") }>
+      <div className="text-xs text-slate-500">{label}</div>
+      <div className={["text-lg font-semibold", subtle ? "text-slate-600" : "text-slate-900"].join(" ")}>{value}</div>
+    </div>
+  );
+}
+
