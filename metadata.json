@@ -1,0 +1,6 @@
+{
+  "name": "Energy Needs Estimator - Tescom",
+  "description": "Υπολογισμός φορτίων (kW) συσκευών για την επιλογή του κατάλληλου UPS.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
