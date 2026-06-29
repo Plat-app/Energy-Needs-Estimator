@@ -280,6 +280,11 @@ export default function App() {
           onRemove={removeDevice} 
           onClear={() => setDevices([])} 
         />
+        <div className="text-right mt-4 px-2">
+          <p className="text-[14px] text-slate-400 italic">
+            Η εκτίμηση είναι ενδεικτική και αφορά μόνο το συνολικό φορτίο σε Watt.
+          </p>
+        </div>
       </div>
     </div>
   );
