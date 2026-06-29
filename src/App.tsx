@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Zap, 
   Server, 
@@ -18,6 +18,9 @@ import {
 import { DeviceList } from './components/DeviceList';
 
 export default function App() {
+  useEffect(() => {
+    console.log('App component mounted');
+  }, []);
   const [devices, setDevices] = useState<SelectedDevice[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category>('server');
   const [selectedPredefinedId, setSelectedPredefinedId] = useState(PREDEFINED_DEVICES['server'][0].id);
@@ -26,12 +29,9 @@ export default function App() {
   const [customWatts, setCustomWatts] = useState<number>(0);
   const [customQty, setCustomQty] = useState<number>(1);
   
-  const [powerFactorInput, setPowerFactorInput] = useState('0.9');
   const [safetyMargin, setSafetyMargin] = useState(0.2);
 
-  const powerFactor = parseFloat(powerFactorInput.replace(',', '.')) || 0;
   const totalWatts = devices.reduce((sum, d) => sum + (d.watts * d.quantity), 0);
-  const totalVA = powerFactor > 0 ? totalWatts / powerFactor : 0;
   const netPower = totalWatts * (1 + safetyMargin);
 
   const addPredefined = () => {
@@ -218,40 +218,26 @@ export default function App() {
 
           {/* Right Column: Summary Card */}
           <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex flex-col gap-10">
-            <section>
-              <label className="text-[10px] font-black text-slate-400 tracking-widest mb-2 block">Συνολικό φορτίο</label>
-              <div className="flex items-baseline gap-2">
-                <span className="text-7xl font-black text-slate-800 tracking-tighter">
-                  {totalWatts.toLocaleString('el-GR')}
-                </span>
-                <span className="text-4xl font-black text-sky-400">W</span>
-              </div>
-            </section>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-start">
+              <section>
+                <label className="text-[10px] font-black text-slate-400 tracking-widest mb-2 block">Συνολικό φορτίο</label>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-black text-slate-800 tracking-tighter">
+                    {totalWatts.toLocaleString('el-GR')}
+                  </span>
+                  <span className="text-2xl font-black text-sky-400">W</span>
+                </div>
+              </section>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-50 flex flex-col items-center">
-                <label className="text-[9px] font-black text-sky-900/40 tracking-widest mb-3 block uppercase">Power factor</label>
-                <div className="bg-white rounded-2xl border border-slate-200 w-full py-2 shadow-sm shadow-slate-200/50">
-                  <input
-                    type="text"
-                    value={powerFactorInput}
-                    onChange={(e) => setPowerFactorInput(e.target.value)}
-                    className="w-full bg-transparent text-lg font-bold text-slate-700 text-center focus:outline-none"
-                  />
+              <section className="sm:border-l sm:border-slate-100 sm:pl-8">
+                <label className="text-[10px] font-black text-slate-400 tracking-widest mb-2 block">Φορτίο με προσαύξηση</label>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-black text-slate-800 tracking-tighter">
+                    {Math.round(netPower).toLocaleString('el-GR')}
+                  </span>
+                  <span className="text-2xl font-black text-sky-400">W</span>
                 </div>
-              </div>
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-50">
-                <label className="text-[9px] font-black text-slate-400 tracking-widest mb-2 block">Εκτ. VA</label>
-                <div className="text-lg font-bold text-slate-700">
-                  {Math.round(totalVA).toLocaleString('el-GR')} <span className="text-[10px] text-slate-400">VA</span>
-                </div>
-              </div>
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-50">
-                <label className="text-[9px] font-black text-slate-400 tracking-widest mb-2 block">Καθαρή ισχύς</label>
-                <div className="text-lg font-bold text-slate-700">
-                  {Math.round(totalWatts * powerFactor).toLocaleString('el-GR')} <span className="text-[10px] text-slate-400">W</span>
-                </div>
-              </div>
+              </section>
             </div>
 
             <section>
