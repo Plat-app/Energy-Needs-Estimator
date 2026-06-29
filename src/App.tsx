@@ -116,7 +116,7 @@ export default function App() {
           </div>
           {/* Εδώ χρησιμοποιείται το logo.png από το φάκελο public */}
 <a href="https://b2b.tescom.gr" target="_blank" rel="noopener noreferrer">
-            <img src="/logo.png" alt="Tescom Logo" className="h-[38.4px] hidden sm:block hover:opacity-80 transition-opacity" />
+            <img src="/logo.png" alt="Tescom Logo" className="h-[50px] hidden sm:block hover:opacity-80 transition-opacity" />
           </a>
         </header>
 
