@@ -115,7 +115,9 @@ export default function App() {
             </div>
           </div>
           {/* Εδώ χρησιμοποιείται το logo.png από το φάκελο public */}
-          <img src="/logo.png" alt="Tescom Logo" className="h-8 hidden sm:block" />
+<a href="https://b2b.tescom.gr" target="_blank" rel="noopener noreferrer">
+            <img src="/logo.png" alt="Tescom Logo" className="h-8 hidden sm:block hover:opacity-80 transition-opacity" />
+          </a>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
