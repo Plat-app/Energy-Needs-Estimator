@@ -104,7 +104,7 @@ export default function App() {
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans p-4 sm:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <header className="flex items-center justify-between">
+        <header className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-sky-500 rounded-xl flex items-center justify-center shadow-lg shadow-sky-500/20">
               <Zap className="w-6 h-6 text-white fill-white" />
@@ -114,9 +114,8 @@ export default function App() {
               <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Tescom Hellas</p>
             </div>
           </div>
-          {/* Εδώ χρησιμοποιείται το logo.png από το φάκελο public */}
-<a href="https://b2b.tescom.gr" target="_blank" rel="noopener noreferrer">
-            <img src="/logo.png" alt="Tescom Logo" className="h-[50px] hidden sm:block hover:opacity-80 transition-opacity" />
+          <a href="https://b2b.tescom.gr" target="_blank" rel="noopener noreferrer" className="inline-block">
+            <img src="/logo.png" alt="Tescom Logo" className="h-[40px] sm:h-[50px] w-auto block hover:opacity-80 transition-opacity" />
           </a>
         </header>
 
@@ -270,7 +269,7 @@ export default function App() {
               className="w-full py-5 bg-white border border-slate-100 rounded-2xl font-bold text-slate-800 flex items-center justify-center gap-3 hover:bg-slate-50 transition-all shadow-sm"
             >
               <ExternalLink className="w-4 h-4 text-slate-400" />
-              Δείτε διαθέσιμα UPS
+              Εύρεση κατάλληλου UPS
             </a>
           </div>
         </div>
