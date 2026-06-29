@@ -114,8 +114,7 @@ export default function App() {
               <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Tescom Hellas</p>
             </div>
           </div>
-          <img src="https://tescom.gr/wp-content/uploads/2021/04/tescom-logo.png" alt="Tescom Logo" className="h-8 hidden sm:block" />
-        </header>
+          <img src="/logo.png" alt="Tescom Logo" className="h-8 hidden sm:block" />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column: Input Card */}
