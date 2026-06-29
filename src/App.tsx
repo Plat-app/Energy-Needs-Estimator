@@ -269,7 +269,7 @@ export default function App() {
               className="w-full py-5 bg-white border border-slate-100 rounded-2xl font-bold text-slate-800 flex items-center justify-center gap-3 hover:bg-slate-50 transition-all shadow-sm"
             >
               <ExternalLink className="w-4 h-4 text-slate-400" />
-              Εύρεση κατάλληλου UPS
+              Δείτε διαθέσιμα UPS
             </a>
           </div>
         </div>
