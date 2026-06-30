@@ -286,6 +286,8 @@ export default function App() {
           onRemove={removeDevice} 
           onUpdateQuantity={updateQuantity}
           onClear={() => setDevices([])} 
+          totalWatts={totalWatts}
+          marginPower={netPower}
         />
         <div className="text-right mt-4 px-2">
           <p className="text-[14px] text-slate-400 italic">
