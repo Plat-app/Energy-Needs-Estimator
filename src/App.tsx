@@ -112,7 +112,7 @@ export default function App() {
         {/* Header */}
         <header className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-8">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-sky-500 rounded-xl flex items-center justify-center shadow-lg shadow-sky-500/20">
+            <div className="w-10 h-10 bg-[#0971ce] rounded-xl flex items-center justify-center shadow-lg shadow-[#0971ce]/20">
               <Zap className="w-6 h-6 text-white fill-white" />
             </div>
             <div>
@@ -165,7 +165,7 @@ export default function App() {
                   <select
                     value={selectedPredefinedId}
                     onChange={(e) => setSelectedPredefinedId(e.target.value)}
-                    className="w-full h-14 pl-5 pr-12 rounded-2xl bg-slate-50 border-2 border-sky-100 appearance-none focus:bg-white focus:border-sky-500 transition-all text-slate-700 font-bold shadow-sm shadow-sky-500/5"
+                    className="w-full h-14 pl-5 pr-12 rounded-2xl bg-slate-50 border-2 border-[#0971ce]/10 appearance-none focus:bg-white focus:border-[#0971ce] transition-all text-slate-700 font-bold shadow-sm shadow-[#0971ce]/5"
                   >
                     <option value="">Επιλογή συσκευής...</option>
                     {PREDEFINED_DEVICES[activeCategory].map((d) => (
@@ -191,7 +191,7 @@ export default function App() {
                 placeholder="Όνομα συσκευής"
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
-                className="w-full h-14 px-5 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-sky-500 transition-all text-slate-700 font-bold placeholder:text-slate-300"
+                className="w-full h-14 px-5 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-[#0971ce] transition-all text-slate-700 font-bold placeholder:text-slate-300"
               />
               <div className="flex gap-3">
                 <div className="relative flex-1">
@@ -200,7 +200,7 @@ export default function App() {
                     placeholder="Watts"
                     value={customWatts || ''}
                     onChange={(e) => setCustomWatts(Number(e.target.value))}
-                    className="w-full h-14 px-5 pr-12 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-sky-500 transition-all text-slate-700 font-bold placeholder:text-slate-300"
+                    className="w-full h-14 px-5 pr-12 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-[#0971ce] transition-all text-slate-700 font-bold placeholder:text-slate-300"
                   />
                   <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">W</span>
                 </div>
@@ -211,12 +211,12 @@ export default function App() {
                     placeholder="Ποσ."
                     value={customQty}
                     onChange={(e) => setCustomQty(Number(e.target.value))}
-                    className="w-full h-14 px-5 text-center rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-sky-500 transition-all text-slate-700 font-bold"
+                    className="w-full h-14 px-5 text-center rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-[#0971ce] transition-all text-slate-700 font-bold"
                   />
                 </div>
                 <button 
                   onClick={addCustom}
-                  className="w-14 h-14 bg-sky-500 rounded-2xl flex items-center justify-center hover:bg-sky-600 transition-all text-white shadow-xl shadow-sky-500/20"
+                  className="w-14 h-14 bg-[#0971ce] rounded-2xl flex items-center justify-center hover:bg-[#075da9] transition-all text-white shadow-xl shadow-[#0971ce]/20"
                 >
                   <Plus className="w-6 h-6" />
                 </button>
@@ -233,7 +233,7 @@ export default function App() {
                   <span className="text-5xl font-black text-slate-800 tracking-tighter">
                     {totalWatts.toLocaleString('el-GR')}
                   </span>
-                  <span className="text-2xl font-black text-sky-400">W</span>
+                  <span className="text-2xl font-black text-[#0971ce]">W</span>
                 </div>
               </section>
 
@@ -243,13 +243,13 @@ export default function App() {
                   <span className="text-5xl font-black text-slate-800 tracking-tighter">
                     {Math.round(netPower).toLocaleString('el-GR')}
                   </span>
-                  <span className="text-2xl font-black text-sky-400">W</span>
+                  <span className="text-2xl font-black text-[#0971ce]">W</span>
                 </div>
               </section>
             </div>
 
             <section>
-              <label className="text-[10px] font-black text-slate-400 tracking-widest mb-4 block underline decoration-sky-400 underline-offset-4">Περιθώριο ασφαλείας</label>
+              <label className="text-[10px] font-black text-slate-400 tracking-widest mb-4 block underline decoration-[#0971ce] underline-offset-4">Περιθώριο ασφαλείας</label>
               <div className="bg-white rounded-2xl p-1 border border-slate-100 grid grid-cols-4 gap-1">
                 {[0, 0.1, 0.2, 0.3].map((m) => (
                   <button
@@ -275,7 +275,7 @@ export default function App() {
               className="w-full py-5 bg-white border border-slate-100 rounded-2xl font-bold text-slate-800 flex items-center justify-center gap-3 hover:bg-slate-50 transition-all shadow-sm"
             >
               <ExternalLink className="w-4 h-4 text-slate-400" />
-              Δείτε διαθέσιμα UPS
+              Εύρεση κατάλληλου UPS
             </a>
           </div>
         </div>
