@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Trash2, RotateCcw, ChevronUp, ChevronDown, ExternalLink, Download } from 'lucide-react';
+import { Trash2, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
 import { SelectedDevice } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 
 interface Props {
   devices: SelectedDevice[];
   onRemove: (id: string) => void;
   onUpdateQuantity: (id: string, quantity: number) => void;
   onClear: () => void;
-  totalWatts: number;
-  marginPower: number;
 }
 
 const DeviceRow: React.FC<{ 
@@ -100,179 +96,23 @@ const DeviceRow: React.FC<{
   );
 };
 
-export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantity, onClear, totalWatts, marginPower }) => {
-  const [isExporting, setIsExporting] = useState(false);
-  const pdfRef = React.useRef<HTMLDivElement>(null);
-
-  const exportToPDF = async () => {
-    const element = pdfRef.current;
-    if (!element) return;
-    
-    setIsExporting(true);
-    
-    try {
-      // 1. Create a clone and mount it safely to ensure rendering
-      const clone = element.cloneNode(true) as HTMLDivElement;
-      clone.style.position = 'fixed';
-      clone.style.top = '0';
-      clone.style.left = '0';
-      clone.style.width = '800px';
-      clone.style.visibility = 'visible';
-      clone.style.opacity = '1';
-      clone.style.zIndex = '-9999';
-      clone.style.backgroundColor = 'white';
-      document.body.appendChild(clone);
-
-      // 2. Wait for layout
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      // 3. Capture
-      const canvas = await html2canvas(clone, {
-        scale: 1.5, // Reduced scale for better compatibility/memory
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        width: 800,
-        windowWidth: 800
-      });
-
-      // 4. Clean up
-      document.body.removeChild(clone);
-      
-      // 5. Generate PDF
-      const imgData = canvas.toDataURL('image/jpeg', 0.9);
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      const margin = 10;
-      const maxWidth = pdfWidth - (margin * 2);
-      const maxHeight = pdfHeight - (margin * 2);
-      
-      const imgRatio = canvas.width / canvas.height;
-      let finalWidth = maxWidth;
-      let finalHeight = maxWidth / imgRatio;
-
-      if (finalHeight > maxHeight) {
-        finalHeight = maxHeight;
-        finalWidth = maxHeight * imgRatio;
-      }
-
-      const marginX = (pdfWidth - finalWidth) / 2;
-      const marginY = margin;
-      
-      pdf.addImage(imgData, 'JPEG', marginX, marginY, finalWidth, finalHeight);
-      pdf.save(`Tescom_Load_Estimate_${new Date().getTime()}.pdf`);
-    } catch (error) {
-      console.error('PDF Export Error:', error);
-      alert('Σφάλμα κατά την εξαγωγή. Δοκιμάστε να κάνετε μια ανανέωση (Refresh) στη σελίδα και προσπαθήστε ξανά.');
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
+export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantity, onClear }) => {
   return (
-    <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden mb-4 relative">
-      <div className="absolute bottom-1 right-3 text-[8px] text-slate-200 pointer-events-none">v1.1</div>
+    <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
       <div className="p-6 border-b border-slate-50 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-black text-slate-800 tracking-tight">Λίστα συσκευών</h2>
-          {devices.length > 0 && (
-            <span className="px-2 py-0.5 bg-emerald-50 text-[#0971ce] text-[10px] font-black rounded-full border border-[#0971ce]/10">
-              {devices.length} {devices.length === 1 ? 'συσκευή' : 'συσκευές'}
-            </span>
-          )}
+          <h3 className="text-slate-700 font-bold">Λίστα συσκευών</h3>
+          <span className="bg-emerald-50 text-emerald-600 text-xs px-2 py-1 rounded-full font-bold">
+            {devices.length} συσκευές
+          </span>
         </div>
-        <div className="flex items-center gap-4">
-          {devices.length > 0 && (
-            <button 
-              onClick={exportToPDF}
-              disabled={isExporting}
-              className="flex items-center gap-2 text-[#0971ce] hover:text-[#075da9] transition-colors text-sm font-bold px-3 py-1.5 bg-[#0971ce]/5 rounded-lg disabled:opacity-50"
-            >
-              {isExporting ? (
-                <RotateCcw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              Εξαγωγή PDF
-            </button>
-          )}
-          <button 
-            onClick={onClear}
-            className="flex items-center gap-2 text-slate-400 hover:text-rose-500 transition-colors text-sm font-bold"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Καθαρισμός
-          </button>
-        </div>
-      </div>
-
-      {/* Hidden PDF Template - Fixed Visibility */}
-      <div 
-        style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: '-9999px', 
-          width: '800px',
-          visibility: 'hidden',
-          opacity: 0,
-          pointerEvents: 'none',
-          backgroundColor: 'white'
-        }}
-      >
-        <div 
-          ref={pdfRef} 
-          className="p-12 bg-white font-sans text-slate-800"
-          style={{ width: '800px' }}
+        <button 
+          onClick={onClear}
+          className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors text-sm font-medium"
         >
-          <div className="flex justify-between items-start mb-12">
-            <div>
-              <div className="text-3xl font-black text-[#0971ce] mb-0 leading-none">TESCOM</div>
-              <div className="text-[11px] font-bold text-slate-400 tracking-[0.3em] uppercase">Hellas</div>
-            </div>
-            <div className="text-right">
-              <h1 className="text-2xl font-black text-slate-900 mb-1">Εκτίμηση Αναγκών Φορτίου</h1>
-              <p className="text-slate-400 font-bold text-sm">Ημερομηνία: {new Date().toLocaleDateString('el-GR')}</p>
-            </div>
-          </div>
-
-          <table className="w-full mb-12 border-collapse">
-            <thead>
-              <tr className="bg-[#0971ce] text-white">
-                <th className="p-4 text-left rounded-tl-xl">Συσκευή</th>
-                <th className="p-4 text-center">Ποσότητα</th>
-                <th className="p-4 text-center">Watts/μον.</th>
-                <th className="p-4 text-right rounded-tr-xl">Σύνολο</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {devices.map((device) => (
-                <tr key={device.id}>
-                  <td className="p-4 font-bold">{device.name}</td>
-                  <td className="p-4 text-center">{device.quantity}</td>
-                  <td className="p-4 text-center">{device.watts} W</td>
-                  <td className="p-4 text-right font-black">{device.watts * device.quantity} W</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-slate-500 font-bold">Συνολικό Φορτίο:</span>
-              <span className="text-xl font-black text-slate-900">{totalWatts} W</span>
-            </div>
-            <div className="flex justify-between items-center pt-4 border-t border-slate-200">
-              <span className="text-[#0971ce] font-black uppercase tracking-wider text-sm">Προτεινόμενη Ισχύς (+25%):</span>
-              <span className="text-3xl font-black text-[#0971ce]">{Math.round(marginPower)} W</span>
-            </div>
-          </div>
-
-          <div className="mt-12 text-[10px] text-slate-400 italic text-center border-t border-slate-100 pt-6">
-            Η εκτίμηση είναι ενδεικτική και αφορά μόνο το συνολικό φορτίο σε Watt. Για ακριβή μελέτη και επιλογή UPS, παρακαλούμε επικοινωνήστε με την TESCOM HELLAS.
-          </div>
-        </div>
+          <RotateCcw className="w-4 h-4" />
+          Καθαρισμός
+        </button>
       </div>
 
       <div className="overflow-x-auto">
