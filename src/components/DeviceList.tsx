@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Trash2, RotateCcw, ChevronUp, ChevronDown, ExternalLink } from 'lucide-react';
+import { Trash2, RotateCcw, ChevronUp, ChevronDown, ExternalLink, Download } from 'lucide-react';
 import { SelectedDevice } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import html2canvas from 'html2canvas';
 
 interface Props {
   devices: SelectedDevice[];
@@ -101,95 +101,34 @@ const DeviceRow: React.FC<{
 };
 
 export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantity, onClear, totalWatts, marginPower }) => {
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = "https://b2b.tescom.gr/static/version1719240893/frontend/MageBig/martfury_child/el_GR/images/logo.png";
+  const [isExporting, setIsExporting] = useState(false);
+  const pdfRef = React.useRef<HTMLDivElement>(null);
+
+  const exportToPDF = async () => {
+    if (!pdfRef.current) return;
+    setIsExporting(true);
     
-    img.onload = () => {
-      // Add Logo
-      doc.addImage(img, 'PNG', 14, 10, 40, 10);
-      
-      doc.setFontSize(18);
-      doc.setTextColor(40);
-      doc.text("Εκτίμηση Αναγκών Φορτίου", 14, 30);
-      
-      doc.setFontSize(10);
-      doc.setTextColor(100);
-      doc.text(`Ημερομηνία: ${new Date().toLocaleDateString('el-GR')}`, 14, 38);
-
-      const tableData = devices.map(d => [
-        d.name,
-        d.quantity.toString(),
-        `${d.watts} W`,
-        `${d.watts * d.quantity} W`
-      ]);
-
-      autoTable(doc, {
-        startY: 45,
-        head: [['Συσκευή', 'Ποσότητα', 'Watts/μον.', 'Σύνολο']],
-        body: tableData,
-        headStyles: { fillColor: [9, 113, 206], textColor: [255, 255, 255] },
-        alternateRowStyles: { fillColor: [250, 250, 250] },
+    try {
+      const canvas = await html2canvas(pdfRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
       });
-
-      const finalY = (doc as any).lastAutoTable.finalY + 10;
       
-      doc.setFontSize(12);
-      doc.setTextColor(40);
-      doc.text(`Συνολικό Φορτίο: ${totalWatts} W`, 14, finalY);
-      doc.text(`Φορτίο με Προσαύξηση: ${Math.round(marginPower)} W`, 14, finalY + 7);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       
-      doc.setFontSize(8);
-      doc.setTextColor(150);
-      doc.text("Η εκτίμηση είναι ενδεικτική και αφορά μόνο το συνολικό φορτίο σε Watt.", 14, finalY + 20);
-
-      doc.save(`Tescom_Load_Estimate_${new Date().getTime()}.pdf`);
-    };
-
-    img.onerror = () => {
-      // Fallback if image fails to load
-      doc.setFontSize(18);
-      doc.setTextColor(9, 113, 206);
-      doc.text("TESCOM HELLAS", 14, 20);
-      
-      doc.setFontSize(18);
-      doc.setTextColor(40);
-      doc.text("Εκτίμηση Αναγκών Φορτίου", 14, 35);
-      
-      doc.setFontSize(10);
-      doc.setTextColor(100);
-      doc.text(`Ημερομηνία: ${new Date().toLocaleDateString('el-GR')}`, 14, 43);
-
-      const tableData = devices.map(d => [
-        d.name,
-        d.quantity.toString(),
-        `${d.watts} W`,
-        `${d.watts * d.quantity} W`
-      ]);
-
-      autoTable(doc, {
-        startY: 50,
-        head: [['Συσκευή', 'Ποσότητα', 'Watts/μον.', 'Σύνολο']],
-        body: tableData,
-        headStyles: { fillColor: [9, 113, 206], textColor: [255, 255, 255] },
-        alternateRowStyles: { fillColor: [250, 250, 250] },
-      });
-
-      const finalY = (doc as any).lastAutoTable.finalY + 10;
-      
-      doc.setFontSize(12);
-      doc.setTextColor(40);
-      doc.text(`Συνολικό Φορτίο: ${totalWatts} W`, 14, finalY);
-      doc.text(`Φορτίο με Προσαύξηση: ${Math.round(marginPower)} W`, 14, finalY + 7);
-      
-      doc.setFontSize(8);
-      doc.setTextColor(150);
-      doc.text("Η εκτίμηση είναι ενδεικτική και αφορά μόνο το συνολικό φορτίο σε Watt.", 14, finalY + 20);
-
-      doc.save(`Tescom_Load_Estimate_${new Date().getTime()}.pdf`);
-    };
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Tescom_Load_Estimate_${new Date().getTime()}.pdf`);
+    } catch (error) {
+      console.error('PDF Export Error:', error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -207,9 +146,14 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
           {devices.length > 0 && (
             <button 
               onClick={exportToPDF}
-              className="flex items-center gap-2 text-[#0971ce] hover:text-[#075da9] transition-colors text-sm font-bold px-3 py-1.5 bg-[#0971ce]/5 rounded-lg"
+              disabled={isExporting}
+              className="flex items-center gap-2 text-[#0971ce] hover:text-[#075da9] transition-colors text-sm font-bold px-3 py-1.5 bg-[#0971ce]/5 rounded-lg disabled:opacity-50"
             >
-              <ExternalLink className="w-4 h-4" />
+              {isExporting ? (
+                <RotateCcw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
               Εξαγωγή PDF
             </button>
           )}
@@ -220,6 +164,62 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
             <RotateCcw className="w-4 h-4" />
             Καθαρισμός
           </button>
+        </div>
+      </div>
+
+      {/* Hidden PDF Template */}
+      <div className="fixed -left-[2000px] top-0">
+        <div 
+          ref={pdfRef} 
+          className="w-[800px] p-12 bg-white font-sans text-slate-800"
+        >
+          <div className="flex justify-between items-start mb-12">
+            <img 
+              src="https://b2b.tescom.gr/static/version1719240893/frontend/MageBig/martfury_child/el_GR/images/logo.png" 
+              alt="Tescom" 
+              className="h-12 w-auto"
+            />
+            <div className="text-right">
+              <h1 className="text-2xl font-black text-slate-900 mb-1">Εκτίμηση Αναγκών Φορτίου</h1>
+              <p className="text-slate-400 font-bold text-sm">Ημερομηνία: {new Date().toLocaleDateString('el-GR')}</p>
+            </div>
+          </div>
+
+          <table className="w-full mb-12 border-collapse">
+            <thead>
+              <tr className="bg-[#0971ce] text-white">
+                <th className="p-4 text-left rounded-tl-xl">Συσκευή</th>
+                <th className="p-4 text-center">Ποσότητα</th>
+                <th className="p-4 text-center">Watts/μον.</th>
+                <th className="p-4 text-right rounded-tr-xl">Σύνολο</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {devices.map((device) => (
+                <tr key={device.id}>
+                  <td className="p-4 font-bold">{device.name}</td>
+                  <td className="p-4 text-center">{device.quantity}</td>
+                  <td className="p-4 text-center">{device.watts} W</td>
+                  <td className="p-4 text-right font-black">{device.watts * device.quantity} W</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-slate-500 font-bold">Συνολικό Φορτίο:</span>
+              <span className="text-xl font-black text-slate-900">{totalWatts} W</span>
+            </div>
+            <div className="flex justify-between items-center pt-4 border-t border-slate-200">
+              <span className="text-[#0971ce] font-black uppercase tracking-wider text-sm">Προτεινόμενη Ισχύς (+25%):</span>
+              <span className="text-3xl font-black text-[#0971ce]">{Math.round(marginPower)} W</span>
+            </div>
+          </div>
+
+          <div className="mt-12 text-[10px] text-slate-400 italic text-center border-t border-slate-100 pt-6">
+            Η εκτίμηση είναι ενδεικτική και αφορά μόνο το συνολικό φορτίο σε Watt. Για ακριβή μελέτη και επιλογή UPS, παρακαλούμε επικοινωνήστε με την TESCOM HELLAS.
+          </div>
         </div>
       </div>
 
