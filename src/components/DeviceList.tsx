@@ -42,7 +42,7 @@ const DeviceRow: React.FC<{
       animate={{ 
         opacity: 1, 
         x: 0,
-        backgroundColor: isHighlighting ? 'rgba(224, 242, 254, 0.5)' : 'rgba(255, 255, 255, 0)'
+        backgroundColor: isHighlighting ? 'rgba(9, 113, 206, 0.05)' : 'rgba(255, 255, 255, 0)'
       }}
       exit={{ opacity: 0, x: 20 }}
       className="group transition-colors"
@@ -50,7 +50,7 @@ const DeviceRow: React.FC<{
       <td className="px-6 py-4">
         <div className="font-bold text-slate-700">{device.name}</div>
         <div className="flex items-center gap-1.5 mt-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-[#0971ce]"></div>
           <span className="text-[10px] text-slate-400 font-bold tracking-wider">Βιβλιοθήκη</span>
         </div>
       </td>
@@ -62,14 +62,14 @@ const DeviceRow: React.FC<{
           <div className="flex flex-col -space-y-1">
             <button 
               onClick={handleIncrement}
-              className="p-0.5 text-slate-400 hover:text-sky-500 transition-colors"
+              className="p-0.5 text-slate-400 hover:text-[#0971ce] transition-colors"
             >
               <ChevronUp className="w-4 h-4" />
             </button>
             <button 
               onClick={handleDecrement}
               disabled={device.quantity <= 1}
-              className="p-0.5 text-slate-400 hover:text-sky-500 transition-colors disabled:opacity-30"
+              className="p-0.5 text-slate-400 hover:text-[#0971ce] transition-colors disabled:opacity-30"
             >
               <ChevronDown className="w-4 h-4" />
             </button>
