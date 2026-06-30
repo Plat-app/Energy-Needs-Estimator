@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Trash2, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
+import { Trash2, RotateCcw, ChevronUp, ChevronDown, ExternalLink } from 'lucide-react';
 import { SelectedDevice } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 interface Props {
   devices: SelectedDevice[];
   onRemove: (id: string) => void;
   onUpdateQuantity: (id: string, quantity: number) => void;
   onClear: () => void;
+  totalWatts: number;
+  marginPower: number;
 }
 
 const DeviceRow: React.FC<{ 
@@ -96,23 +100,127 @@ const DeviceRow: React.FC<{
   );
 };
 
-export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantity, onClear }) => {
+export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantity, onClear, totalWatts, marginPower }) => {
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = "https://b2b.tescom.gr/static/version1719240893/frontend/MageBig/martfury_child/el_GR/images/logo.png";
+    
+    img.onload = () => {
+      // Add Logo
+      doc.addImage(img, 'PNG', 14, 10, 40, 10);
+      
+      doc.setFontSize(18);
+      doc.setTextColor(40);
+      doc.text("Εκτίμηση Αναγκών Φορτίου", 14, 30);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Ημερομηνία: ${new Date().toLocaleDateString('el-GR')}`, 14, 38);
+
+      const tableData = devices.map(d => [
+        d.name,
+        d.quantity.toString(),
+        `${d.watts} W`,
+        `${d.watts * d.quantity} W`
+      ]);
+
+      (doc as any).autoTable({
+        startY: 45,
+        head: [['Συσκευή', 'Ποσότητα', 'Watts/μον.', 'Σύνολο']],
+        body: tableData,
+        headStyles: { fillColor: [9, 113, 206], textColor: [255, 255, 255] },
+        alternateRowStyles: { fillColor: [250, 250, 250] },
+      });
+
+      const finalY = (doc as any).lastAutoTable.finalY + 10;
+      
+      doc.setFontSize(12);
+      doc.setTextColor(40);
+      doc.text(`Συνολικό Φορτίο: ${totalWatts} W`, 14, finalY);
+      doc.text(`Φορτίο με Προσαύξηση: ${Math.round(marginPower)} W`, 14, finalY + 7);
+      
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text("Η εκτίμηση είναι ενδεικτική και αφορά μόνο το συνολικό φορτίο σε Watt.", 14, finalY + 20);
+
+      doc.save(`Tescom_Load_Estimate_${new Date().getTime()}.pdf`);
+    };
+
+    img.onerror = () => {
+      // Fallback if image fails to load
+      doc.setFontSize(18);
+      doc.setTextColor(9, 113, 206);
+      doc.text("TESCOM HELLAS", 14, 20);
+      
+      doc.setFontSize(18);
+      doc.setTextColor(40);
+      doc.text("Εκτίμηση Αναγκών Φορτίου", 14, 35);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Ημερομηνία: ${new Date().toLocaleDateString('el-GR')}`, 14, 43);
+
+      const tableData = devices.map(d => [
+        d.name,
+        d.quantity.toString(),
+        `${d.watts} W`,
+        `${d.watts * d.quantity} W`
+      ]);
+
+      (doc as any).autoTable({
+        startY: 50,
+        head: [['Συσκευή', 'Ποσότητα', 'Watts/μον.', 'Σύνολο']],
+        body: tableData,
+        headStyles: { fillColor: [9, 113, 206], textColor: [255, 255, 255] },
+        alternateRowStyles: { fillColor: [250, 250, 250] },
+      });
+
+      const finalY = (doc as any).lastAutoTable.finalY + 10;
+      
+      doc.setFontSize(12);
+      doc.setTextColor(40);
+      doc.text(`Συνολικό Φορτίο: ${totalWatts} W`, 14, finalY);
+      doc.text(`Φορτίο με Προσαύξηση: ${Math.round(marginPower)} W`, 14, finalY + 7);
+      
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text("Η εκτίμηση είναι ενδεικτική και αφορά μόνο το συνολικό φορτίο σε Watt.", 14, finalY + 20);
+
+      doc.save(`Tescom_Load_Estimate_${new Date().getTime()}.pdf`);
+    };
+  };
+
   return (
     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
       <div className="p-6 border-b border-slate-50 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h3 className="text-slate-700 font-bold">Λίστα συσκευών</h3>
-          <span className="bg-emerald-50 text-emerald-600 text-xs px-2 py-1 rounded-full font-bold">
-            {devices.length} συσκευές
-          </span>
+          <h2 className="text-lg font-black text-slate-800 tracking-tight">Λίστα συσκευών</h2>
+          {devices.length > 0 && (
+            <span className="px-2 py-0.5 bg-emerald-50 text-[#0971ce] text-[10px] font-black rounded-full border border-[#0971ce]/10">
+              {devices.length} {devices.length === 1 ? 'συσκευή' : 'συσκευές'}
+            </span>
+          )}
         </div>
-        <button 
-          onClick={onClear}
-          className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors text-sm font-medium"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Καθαρισμός
-        </button>
+        <div className="flex items-center gap-4">
+          {devices.length > 0 && (
+            <button 
+              onClick={exportToPDF}
+              className="flex items-center gap-2 text-[#0971ce] hover:text-[#075da9] transition-colors text-sm font-bold px-3 py-1.5 bg-[#0971ce]/5 rounded-lg"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Εξαγωγή PDF
+            </button>
+          )}
+          <button 
+            onClick={onClear}
+            className="flex items-center gap-2 text-slate-400 hover:text-rose-500 transition-colors text-sm font-bold"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Καθαρισμός
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
