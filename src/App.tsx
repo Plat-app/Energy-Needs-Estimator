@@ -23,7 +23,7 @@ export default function App() {
   }, []);
   const [devices, setDevices] = useState<SelectedDevice[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category>('server');
-  const [selectedPredefinedId, setSelectedPredefinedId] = useState(PREDEFINED_DEVICES['server'][0].id);
+  const [selectedPredefinedId, setSelectedPredefinedId] = useState('');
   
   const [customName, setCustomName] = useState('');
   const [customWatts, setCustomWatts] = useState<number>(0);
@@ -135,7 +135,7 @@ export default function App() {
                     key={cat.id}
                     onClick={() => {
                       setActiveCategory(cat.id as Category);
-                      setSelectedPredefinedId(PREDEFINED_DEVICES[cat.id as Category][0].id);
+                      setSelectedPredefinedId('');
                     }}
                     className={`
                       flex items-center gap-3 p-4 rounded-xl border transition-all
@@ -171,9 +171,9 @@ export default function App() {
                 <button 
                   onClick={addPredefined}
                   disabled={!selectedPredefinedId}
-                  className="w-14 h-14 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center hover:border-sky-500 hover:bg-sky-50 transition-all disabled:opacity-50"
+                  className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-slate-800 transition-all text-white shadow-xl shadow-slate-900/20 disabled:opacity-50"
                 >
-                  <Plus className="w-6 h-6 text-slate-800" />
+                  <Plus className="w-6 h-6" />
                 </button>
               </div>
             </section>
@@ -210,7 +210,7 @@ export default function App() {
                 </div>
                 <button 
                   onClick={addCustom}
-                  className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-slate-800 transition-all text-white shadow-xl shadow-slate-900/20"
+                  className="w-14 h-14 bg-sky-500 rounded-2xl flex items-center justify-center hover:bg-sky-600 transition-all text-white shadow-xl shadow-sky-500/20"
                 >
                   <Plus className="w-6 h-6" />
                 </button>
@@ -269,7 +269,7 @@ export default function App() {
               className="w-full py-5 bg-white border border-slate-100 rounded-2xl font-bold text-slate-800 flex items-center justify-center gap-3 hover:bg-slate-50 transition-all shadow-sm"
             >
               <ExternalLink className="w-4 h-4 text-slate-400" />
-              Δείτε διαθέσιμα UPS
+              Εύρεση κατάλληλου UPS
             </a>
           </div>
         </div>
