@@ -100,6 +100,12 @@ export default function App() {
     setDevices(prev => prev.filter(d => d.id !== id));
   };
 
+  const updateQuantity = (id: string, quantity: number) => {
+    setDevices(prev => prev.map(d => 
+      d.id === id ? { ...d, quantity, lastUpdated: Date.now() } : d
+    ));
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans p-4 sm:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -278,6 +284,7 @@ export default function App() {
         <DeviceList 
           devices={devices} 
           onRemove={removeDevice} 
+          onUpdateQuantity={updateQuantity}
           onClear={() => setDevices([])} 
         />
         <div className="text-right mt-4 px-2">
