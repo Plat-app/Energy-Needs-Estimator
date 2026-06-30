@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { Trash2, RotateCcw } from 'lucide-react';
+import { Trash2, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
 import { SelectedDevice } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface Props {
   devices: SelectedDevice[];
   onRemove: (id: string) => void;
+  onUpdateQuantity: (id: string, quantity: number) => void;
   onClear: () => void;
 }
 
-const DeviceRow: React.FC<{ device: SelectedDevice; onRemove: (id: string) => void }> = ({ device, onRemove }) => {
+const DeviceRow: React.FC<{ 
+  device: SelectedDevice; 
+  onRemove: (id: string) => void;
+  onUpdateQuantity: (id: string, quantity: number) => void;
+}> = ({ device, onRemove, onUpdateQuantity }) => {
   const [isHighlighting, setIsHighlighting] = useState(false);
 
   useEffect(() => {
@@ -19,6 +24,16 @@ const DeviceRow: React.FC<{ device: SelectedDevice; onRemove: (id: string) => vo
       return () => clearTimeout(timer);
     }
   }, [device.lastUpdated]);
+
+  const handleIncrement = () => {
+    onUpdateQuantity(device.id, device.quantity + 1);
+  };
+
+  const handleDecrement = () => {
+    if (device.quantity > 1) {
+      onUpdateQuantity(device.id, device.quantity - 1);
+    }
+  };
 
   return (
     <motion.tr 
@@ -40,9 +55,26 @@ const DeviceRow: React.FC<{ device: SelectedDevice; onRemove: (id: string) => vo
         </div>
       </td>
       <td className="px-6 py-4 text-center">
-        <span className="inline-block px-4 py-1.5 bg-slate-50 rounded-lg text-slate-600 font-bold text-sm border border-slate-100">
-          {device.quantity}
-        </span>
+        <div className="flex items-center justify-center gap-2">
+          <span className="inline-block px-4 py-1.5 bg-slate-50 rounded-lg text-slate-600 font-bold text-sm border border-slate-100 min-w-[3rem]">
+            {device.quantity}
+          </span>
+          <div className="flex flex-col -space-y-1">
+            <button 
+              onClick={handleIncrement}
+              className="p-0.5 text-slate-400 hover:text-sky-500 transition-colors"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={handleDecrement}
+              disabled={device.quantity <= 1}
+              className="p-0.5 text-slate-400 hover:text-sky-500 transition-colors disabled:opacity-30"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </td>
       <td className="px-6 py-4 text-center text-slate-600 font-medium">
         <span className="inline-block px-4 py-1.5 bg-slate-50 rounded-lg text-slate-600 font-bold text-sm border border-slate-100">
@@ -66,7 +98,7 @@ const DeviceRow: React.FC<{ device: SelectedDevice; onRemove: (id: string) => vo
   );
 };
 
-export const DeviceList: React.FC<Props> = ({ devices, onRemove, onClear }) => {
+export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantity, onClear }) => {
   return (
     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
       <div className="p-6 border-b border-slate-50 flex items-center justify-between">
@@ -110,7 +142,12 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onClear }) => {
                 </motion.tr>
               ) : (
                 devices.map((device) => (
-                  <DeviceRow key={device.id} device={device} onRemove={onRemove} />
+                  <DeviceRow 
+                    key={device.id} 
+                    device={device} 
+                    onRemove={onRemove} 
+                    onUpdateQuantity={onUpdateQuantity}
+                  />
                 ))
               )}
             </AnimatePresence>
