@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Trash2, RotateCcw, ChevronUp, ChevronDown, ExternalLink, Download } from 'lucide-react';
 import { SelectedDevice } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
-import { jsPDF } from 'jspdf';
+import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 interface Props {
@@ -109,15 +109,22 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
     setIsExporting(true);
     
     try {
-      // Ensure all rendering is complete
-      await new Promise(resolve => setTimeout(resolve, 150));
+      const element = pdfRef.current;
+      if (!element) return;
 
-      const canvas = await html2canvas(pdfRef.current, {
+      // Temporary visibility fix for html2canvas
+      const originalStyle = element.parentElement!.style.cssText;
+      element.parentElement!.style.cssText = 'position: fixed; top: 0; left: 0; width: 800px; z-index: -1; background: white; visibility: visible;';
+
+      const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff'
       });
+
+      // Restore hidden state
+      element.parentElement!.style.cssText = originalStyle;
       
       const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
