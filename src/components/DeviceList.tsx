@@ -109,8 +109,7 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
     setIsExporting(true);
     
     try {
-      // Ensure images are fully loaded
-      const images = pdfRef.current.getElementsByTagName('img');
+      const images = pdfRef.current.querySelectorAll('img');
       await Promise.all(Array.from(images).map(img => {
         if (img.complete) return Promise.resolve();
         return new Promise((resolve) => {
@@ -119,36 +118,39 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
         });
       }));
 
-      // Render hidden element to canvas
       const canvas = await html2canvas(pdfRef.current, {
         scale: 2,
         useCORS: true,
-        allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff'
       });
       
       const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
-      
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       
-      // Calculate dimensions to fit in A4
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, (pdfHeight - 20) / imgHeight);
+      const margin = 10;
+      const maxWidth = pdfWidth - (margin * 2);
+      const maxHeight = pdfHeight - (margin * 2);
       
-      const finalWidth = imgWidth * ratio;
-      const finalHeight = imgHeight * ratio;
+      const imgRatio = canvas.width / canvas.height;
+      let finalWidth = maxWidth;
+      let finalHeight = maxWidth / imgRatio;
+
+      if (finalHeight > maxHeight) {
+        finalHeight = maxHeight;
+        finalWidth = maxHeight * imgRatio;
+      }
+
       const marginX = (pdfWidth - finalWidth) / 2;
-      const marginY = 10;
+      const marginY = margin;
       
       pdf.addImage(imgData, 'PNG', marginX, marginY, finalWidth, finalHeight);
       pdf.save(`Tescom_Load_Estimate_${new Date().getTime()}.pdf`);
     } catch (error) {
       console.error('PDF Export Error:', error);
-      alert('Παρουσιάστηκε σφάλμα κατά την εξαγωγή. Δοκιμάστε να ανανεώσετε τη σελίδα.');
+      alert('Παρουσιάστηκε σφάλμα κατά την εξαγωγή. Παρακαλούμε δοκιμάστε ξανά.');
     } finally {
       setIsExporting(false);
     }
@@ -190,18 +192,17 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
         </div>
       </div>
 
-      {/* Hidden PDF Template */}
-      <div className="fixed -left-[2000px] top-0">
+      {/* Hidden PDF Template - Fixed Visibility */}
+      <div style={{ position: 'absolute', top: '-9999px', left: '-9999px', pointerEvents: 'none' }}>
         <div 
           ref={pdfRef} 
           className="w-[800px] p-12 bg-white font-sans text-slate-800"
         >
           <div className="flex justify-between items-start mb-12">
-            <img 
-              src="https://b2b.tescom.gr/static/version1719240893/frontend/MageBig/martfury_child/el_GR/images/logo.png" 
-              alt="Tescom" 
-              className="h-12 w-auto"
-            />
+            <div>
+              <div className="text-2xl font-black text-[#0971ce] mb-1">TESCOM</div>
+              <div className="text-[10px] font-bold text-slate-400 tracking-[0.2em]">HELLAS</div>
+            </div>
             <div className="text-right">
               <h1 className="text-2xl font-black text-slate-900 mb-1">Εκτίμηση Αναγκών Φορτίου</h1>
               <p className="text-slate-400 font-bold text-sm">Ημερομηνία: {new Date().toLocaleDateString('el-GR')}</p>
