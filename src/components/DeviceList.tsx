@@ -50,7 +50,8 @@ const DeviceRow: React.FC<{
       }}
       exit={{ opacity: 0, x: 20 }}
       className="group transition-colors"
-    >\n      <td className="px-6 py-4">
+    >
+      <td className="px-6 py-4">
         <div className="font-bold text-slate-700">{device.name}</div>
         <div className="flex items-center gap-1.5 mt-1">
           <div className="w-1.5 h-1.5 rounded-full bg-[#0971ce]"></div>
@@ -110,7 +111,7 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
     setIsExporting(true);
     
     try {
-      // 1. Temporarily make it visible for capture
+      // 1. Temporarily prepare it for capture
       const container = element.parentElement!;
       const originalStyle = container.style.cssText;
       
@@ -121,25 +122,27 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
         width: 800px;
         z-index: -9999;
         visibility: visible;
+        opacity: 1;
         background: white;
       `;
 
       // 2. Wait a moment for layout to stabilize
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // 3. Capture to canvas
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
+        logging: true, // Enable logging for debugging
+        backgroundColor: '#ffffff',
+        windowWidth: 800
       });
 
       // 4. Restore hidden state immediately
       container.style.cssText = originalStyle;
       
       // 5. Generate PDF
-      const imgData = canvas.toDataURL('image/png', 1.0);
+      const imgData = canvas.toDataURL('image/jpeg', 0.95); // Use JPEG for smaller size, sometimes more reliable
       const pdf = new jsPDF('p', 'mm', 'a4');
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -212,10 +215,12 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
         style={{ 
           position: 'fixed', 
           top: 0, 
-          left: '-10000px', 
+          left: '-9999px', 
           width: '800px',
           visibility: 'hidden',
-          pointerEvents: 'none'
+          opacity: 0,
+          pointerEvents: 'none',
+          backgroundColor: 'white'
         }}
       >
         <div 
