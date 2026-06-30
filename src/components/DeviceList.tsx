@@ -109,14 +109,8 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
     setIsExporting(true);
     
     try {
-      const images = pdfRef.current.querySelectorAll('img');
-      await Promise.all(Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise((resolve) => {
-          img.onload = resolve;
-          img.onerror = resolve;
-        });
-      }));
+      // Ensure all rendering is complete
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       const canvas = await html2canvas(pdfRef.current, {
         scale: 2,
@@ -127,6 +121,7 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
       
       const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
+      
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       
@@ -193,15 +188,25 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
       </div>
 
       {/* Hidden PDF Template - Fixed Visibility */}
-      <div style={{ position: 'absolute', top: '-9999px', left: '-9999px', pointerEvents: 'none' }}>
+      <div 
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: '-10000px', 
+          width: '800px',
+          visibility: 'hidden',
+          pointerEvents: 'none'
+        }}
+      >
         <div 
           ref={pdfRef} 
-          className="w-[800px] p-12 bg-white font-sans text-slate-800"
+          className="p-12 bg-white font-sans text-slate-800"
+          style={{ width: '800px' }}
         >
           <div className="flex justify-between items-start mb-12">
             <div>
-              <div className="text-2xl font-black text-[#0971ce] mb-1">TESCOM</div>
-              <div className="text-[10px] font-bold text-slate-400 tracking-[0.2em]">HELLAS</div>
+              <div className="text-3xl font-black text-[#0971ce] mb-0 leading-none">TESCOM</div>
+              <div className="text-[11px] font-bold text-slate-400 tracking-[0.3em] uppercase">Hellas</div>
             </div>
             <div className="text-right">
               <h1 className="text-2xl font-black text-slate-900 mb-1">Εκτίμηση Αναγκών Φορτίου</h1>
