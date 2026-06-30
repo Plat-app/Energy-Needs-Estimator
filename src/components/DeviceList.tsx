@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Trash2, RotateCcw, ChevronUp, ChevronDown, ExternalLink, Download } from 'lucide-react';
 import { SelectedDevice } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
 interface Props {
@@ -50,8 +50,7 @@ const DeviceRow: React.FC<{
       }}
       exit={{ opacity: 0, x: 20 }}
       className="group transition-colors"
-    >
-      <td className="px-6 py-4">
+    >\n      <td className="px-6 py-4">
         <div className="font-bold text-slate-700">{device.name}</div>
         <div className="flex items-center gap-1.5 mt-1">
           <div className="w-1.5 h-1.5 rounded-full bg-[#0971ce]"></div>
@@ -105,17 +104,30 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
   const pdfRef = React.useRef<HTMLDivElement>(null);
 
   const exportToPDF = async () => {
-    if (!pdfRef.current) return;
+    const element = pdfRef.current;
+    if (!element) return;
+    
     setIsExporting(true);
     
     try {
-      const element = pdfRef.current;
-      if (!element) return;
+      // 1. Temporarily make it visible for capture
+      const container = element.parentElement!;
+      const originalStyle = container.style.cssText;
+      
+      container.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 800px;
+        z-index: -9999;
+        visibility: visible;
+        background: white;
+      `;
 
-      // Temporary visibility fix for html2canvas
-      const originalStyle = element.parentElement!.style.cssText;
-      element.parentElement!.style.cssText = 'position: fixed; top: 0; left: 0; width: 800px; z-index: -1; background: white; visibility: visible;';
+      // 2. Wait a moment for layout to stabilize
+      await new Promise(resolve => setTimeout(resolve, 100));
 
+      // 3. Capture to canvas
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
@@ -123,9 +135,10 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
         backgroundColor: '#ffffff'
       });
 
-      // Restore hidden state
-      element.parentElement!.style.cssText = originalStyle;
+      // 4. Restore hidden state immediately
+      container.style.cssText = originalStyle;
       
+      // 5. Generate PDF
       const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
       
@@ -152,7 +165,7 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
       pdf.save(`Tescom_Load_Estimate_${new Date().getTime()}.pdf`);
     } catch (error) {
       console.error('PDF Export Error:', error);
-      alert('Παρουσιάστηκε σφάλμα κατά την εξαγωγή. Παρακαλούμε δοκιμάστε ξανά.');
+      alert('Σφάλμα κατά την εξαγωγή. Παρακαλούμε δοκιμάστε ξανά.');
     } finally {
       setIsExporting(false);
     }
