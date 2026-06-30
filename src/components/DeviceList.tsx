@@ -109,23 +109,46 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
     setIsExporting(true);
     
     try {
+      // Ensure images are fully loaded
+      const images = pdfRef.current.getElementsByTagName('img');
+      await Promise.all(Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+        });
+      }));
+
+      // Render hidden element to canvas
       const canvas = await html2canvas(pdfRef.current, {
         scale: 2,
         useCORS: true,
+        allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff'
       });
       
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      // Calculate dimensions to fit in A4
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, (pdfHeight - 20) / imgHeight);
+      
+      const finalWidth = imgWidth * ratio;
+      const finalHeight = imgHeight * ratio;
+      const marginX = (pdfWidth - finalWidth) / 2;
+      const marginY = 10;
+      
+      pdf.addImage(imgData, 'PNG', marginX, marginY, finalWidth, finalHeight);
       pdf.save(`Tescom_Load_Estimate_${new Date().getTime()}.pdf`);
     } catch (error) {
       console.error('PDF Export Error:', error);
+      alert('Παρουσιάστηκε σφάλμα κατά την εξαγωγή. Δοκιμάστε να ανανεώσετε τη σελίδα.');
     } finally {
       setIsExporting(false);
     }
