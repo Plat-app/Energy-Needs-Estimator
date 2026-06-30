@@ -111,38 +111,35 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
     setIsExporting(true);
     
     try {
-      // 1. Temporarily prepare it for capture
-      const container = element.parentElement!;
-      const originalStyle = container.style.cssText;
-      
-      container.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 800px;
-        z-index: -9999;
-        visibility: visible;
-        opacity: 1;
-        background: white;
-      `;
+      // 1. Create a clone and mount it safely to ensure rendering
+      const clone = element.cloneNode(true) as HTMLDivElement;
+      clone.style.position = 'fixed';
+      clone.style.top = '0';
+      clone.style.left = '0';
+      clone.style.width = '800px';
+      clone.style.visibility = 'visible';
+      clone.style.opacity = '1';
+      clone.style.zIndex = '-9999';
+      clone.style.backgroundColor = 'white';
+      document.body.appendChild(clone);
 
-      // 2. Wait a moment for layout to stabilize
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // 2. Wait for layout
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      // 3. Capture to canvas
-      const canvas = await html2canvas(element, {
-        scale: 2,
+      // 3. Capture
+      const canvas = await html2canvas(clone, {
+        scale: 1.5, // Reduced scale for better compatibility/memory
         useCORS: true,
-        logging: true, // Enable logging for debugging
         backgroundColor: '#ffffff',
+        width: 800,
         windowWidth: 800
       });
 
-      // 4. Restore hidden state immediately
-      container.style.cssText = originalStyle;
+      // 4. Clean up
+      document.body.removeChild(clone);
       
       // 5. Generate PDF
-      const imgData = canvas.toDataURL('image/jpeg', 0.95); // Use JPEG for smaller size, sometimes more reliable
+      const imgData = canvas.toDataURL('image/jpeg', 0.9);
       const pdf = new jsPDF('p', 'mm', 'a4');
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -164,18 +161,19 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
       const marginX = (pdfWidth - finalWidth) / 2;
       const marginY = margin;
       
-      pdf.addImage(imgData, 'PNG', marginX, marginY, finalWidth, finalHeight);
+      pdf.addImage(imgData, 'JPEG', marginX, marginY, finalWidth, finalHeight);
       pdf.save(`Tescom_Load_Estimate_${new Date().getTime()}.pdf`);
     } catch (error) {
       console.error('PDF Export Error:', error);
-      alert('Σφάλμα κατά την εξαγωγή. Παρακαλούμε δοκιμάστε ξανά.');
+      alert('Σφάλμα κατά την εξαγωγή. Δοκιμάστε να κάνετε μια ανανέωση (Refresh) στη σελίδα και προσπαθήστε ξανά.');
     } finally {
       setIsExporting(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden mb-4 relative">
+      <div className="absolute bottom-1 right-3 text-[8px] text-slate-200 pointer-events-none">v1.1</div>
       <div className="p-6 border-b border-slate-50 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-black text-slate-800 tracking-tight">Λίστα συσκευών</h2>
