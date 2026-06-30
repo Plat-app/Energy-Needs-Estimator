@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Trash2, RotateCcw, ChevronUp, ChevronDown, ExternalLink } from 'lucide-react';
 import { SelectedDevice } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface Props {
   devices: SelectedDevice[];
@@ -126,7 +126,7 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
         `${d.watts * d.quantity} W`
       ]);
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: 45,
         head: [['Συσκευή', 'Ποσότητα', 'Watts/μον.', 'Σύνολο']],
         body: tableData,
@@ -169,7 +169,7 @@ export const DeviceList: React.FC<Props> = ({ devices, onRemove, onUpdateQuantit
         `${d.watts * d.quantity} W`
       ]);
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: 50,
         head: [['Συσκευή', 'Ποσότητα', 'Watts/μον.', 'Σύνολο']],
         body: tableData,
