@@ -76,10 +76,8 @@ const DeviceRow: React.FC<{
           </div>
         </div>
       </td>
-      <td className="px-6 py-4 text-center text-slate-600 font-medium">
-        <span className="inline-block px-4 py-1.5 bg-slate-50 rounded-lg text-slate-600 font-bold text-sm border border-slate-100">
-          {device.watts}
-        </span>
+      <td className="px-6 py-4 text-center text-slate-600 font-bold text-sm">
+        {device.watts}
       </td>
       <td className="px-6 py-4 text-center">
         <span className="text-slate-800 font-black">
