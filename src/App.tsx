@@ -267,7 +267,19 @@ export default function App() {
                 ))}
               </div>
             </section>
+            <div className="flex flex-col gap-3">
+          {/* Το νέο Primary Κουμπί */}
+        <a 
+         href={`https://tescom-ups-selector.netlify.app/?load=${Math.round(netPower)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      className="w-full py-5 bg-[#0971ce] rounded-2xl font-bold text-white flex items-center justify-center gap-3 hover:bg-[#075da9] transition-all shadow-lg shadow-[#0971ce]/20"
+  >
+       <ExternalLink className="w-4 h-4 text-white/80" />
+      Συνέχεια στον οδηγό επιλογής UPS
+    </a>
 
+  {/* Το προϋπάρχον κουμπί (μετακινήθηκε μέσα στο div) */}
             <a 
               href="https://b2b.tescom.gr/shop/category/ups-1"
               target="_blank"
