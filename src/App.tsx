@@ -291,14 +291,17 @@ export default function App() {
             </a>
           </div>
         </div>
+      </div>
 
-        {/* Device List Table */}
-        <DeviceList 
-          devices={devices} 
-          onRemove={removeDevice} 
-          onUpdateQuantity={updateQuantity}
-          onClear={() => setDevices([])} 
-        />
+      {/* Device List Table */}
+      <DeviceList 
+        devices={devices} 
+        onRemove={removeDevice} 
+        onUpdateQuantity={updateQuantity}
+        onClear={() => setDevices([])} 
+        totalWatts={totalWatts}
+        marginPower={netPower}
+      />
         <div className="text-right mt-4 px-2">
           <p className="text-[14px] text-slate-400 italic">
             Η εκτίμηση είναι ενδεικτική και αφορά μόνο το συνολικό φορτίο σε Watt.
