@@ -200,7 +200,7 @@ export default function App() {
             </section>
 
             <section className="space-y-4">
-              <label className="text-[10px] font-black text-slate-400 tracking-widest block">Προσαρμοσμένη είσοδος</label>
+              <label className="text-[10px] font-black text-slate-400 tracking-widest block">Προσθήκη δικής σας συσκευής</label>
               <input
                 type="text"
                 placeholder="Όνομα συσκευής"
@@ -212,7 +212,7 @@ export default function App() {
                 <div className="relative flex-1">
                   <input
                     type="number"
-                    placeholder="Watts"
+                    placeholder="Ισχύς σε Watt"
                     value={customWatts || ''}
                     onChange={(e) => setCustomWatts(Number(e.target.value))}
                     className="w-full h-14 px-5 pr-12 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-[#0971ce] transition-all text-slate-700 font-bold placeholder:text-slate-300"
