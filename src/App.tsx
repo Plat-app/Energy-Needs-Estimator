@@ -321,6 +321,11 @@ export default function App() {
           <p className="text-[14px] text-slate-400 italic">
             Η εκτίμηση είναι ενδεικτική και αφορά μόνο το συνολικό φορτίο σε Watt.
           </p>
+                <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-slate-200 mt-20">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+          <p>© 2026 TESCOM HELLAS</p>
+        </div>
+      </footer>
         </div>
         </div>
       </div>
