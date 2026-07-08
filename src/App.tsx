@@ -107,23 +107,38 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <header className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-8">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#0971ce] rounded-xl flex items-center justify-center shadow-lg shadow-[#0971ce]/20">
-              <Zap className="w-6 h-6 text-white fill-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Εκτίμηση αναγκών φορτίου</h1>
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Tescom Hellas</p>
-            </div>
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans">
+      {/* Top Brand Bar */}
+      <div className="bg-white px-4 py-5 lg:px-6 border-b border-slate-100">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <a href="https://b2b.tescom.gr/" target="_blank" rel="noopener noreferrer">
+              <img 
+                src="https://tescom-energy-needs-estimator.netlify.app/logo.png" 
+                alt="TESCOM" 
+                className="h-10 sm:h-14 w-auto object-contain"
+                referrerPolicy="no-referrer"
+              />
+            </a>
+            <div className="h-6 w-px bg-slate-200 hidden sm:block" />
+            <h1 className="font-display font-bold text-lg sm:text-xl tracking-tight text-[#0f172a] text-center sm:text-left">
+              Εκτίμηση αναγκών <span className="text-[#0971ce]">φορτίου</span>
+            </h1>
           </div>
-          <a href="https://b2b.tescom.gr" target="_blank" rel="noopener noreferrer" className="inline-block">
-            <img src="/logo.png" alt="Tescom Logo" className="h-[40px] sm:h-[50px] w-auto block hover:opacity-80 transition-opacity" />
+          <a 
+            href="https://tescom-odigos-epilogis-ups.netlify.app/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-[10px] sm:text-xs font-bold tracking-widest text-slate-400 hover:text-[#0971ce] transition-all group"
+          >
+            Οδηγός επιλογής UPS
+            <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </a>
-        </header>
+        </div>
+      </div>
+
+      <div className="p-4 sm:p-8">
+        <div className="max-w-7xl mx-auto space-y-8">
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column: Input Card */}
@@ -270,7 +285,7 @@ export default function App() {
             <div className="flex flex-col gap-3">
           {/* Το νέο Primary Κουμπί */}
         <a 
-         href="https://tescom-odigos-epilogis-ups.netlify.app"
+         href={`https://tescom-ups-selector.netlify.app/?load=${Math.round(netPower)}`}
         target="_blank"
         rel="noopener noreferrer"
       className="w-full py-5 bg-[#0971ce] rounded-2xl font-bold text-white flex items-center justify-center gap-3 hover:bg-[#075da9] transition-all shadow-lg shadow-[#0971ce]/20"
@@ -306,6 +321,7 @@ export default function App() {
           <p className="text-[14px] text-slate-400 italic">
             Η εκτίμηση είναι ενδεικτική και αφορά μόνο το συνολικό φορτίο σε Watt.
           </p>
+        </div>
         </div>
       </div>
     </div>
