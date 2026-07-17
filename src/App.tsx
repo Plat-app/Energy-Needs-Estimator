@@ -310,7 +310,7 @@ export default function App() {
             <div className="flex flex-col gap-3">
           {/* Το νέο Primary Κουμπί */}
         <a 
-         href={`https://tescom-ups-selector.netlify.app/?load=${Math.round(netPower)}`}
+         href={`https://tescom-odigos-epilogis-ups.netlify.app//?load=${Math.round(netPower)}`}
         target="_blank"
         rel="noopener noreferrer"
       className="w-full py-5 bg-[#0971ce] rounded-2xl font-bold text-white flex items-center justify-center gap-3 hover:bg-[#075da9] transition-all shadow-lg shadow-[#0971ce]/20"
