@@ -30,10 +30,10 @@ export default function App() {
 
   useEffect(() => {
     const sendHeight = () => {
-      const wrapper = document.getElementById('app-wrapper');
-      if (wrapper) {
-        // Χρησιμοποιούμε το scrollHeight του wrapper
-        const height = wrapper.scrollHeight;
+      const content = document.getElementById('app-content-inner');
+      if (content) {
+        // Μετράμε το πραγματικό ύψος του περιεχομένου
+        const height = content.offsetHeight;
         window.parent.postMessage({ type: 'setHeight', height: height }, '*');
       }
     };
@@ -42,20 +42,16 @@ export default function App() {
       sendHeight();
     });
 
-    const wrapper = document.getElementById('app-wrapper');
-    if (wrapper) {
-      resizeObserver.observe(wrapper);
+    const content = document.getElementById('app-content-inner');
+    if (content) {
+      resizeObserver.observe(content);
     }
     
-    // Αρχική αποστολή και μερικές επαναλήψεις για σιγουριά
+    // Αρχική αποστολή
     sendHeight();
-    const timeoutId = setTimeout(sendHeight, 500);
-    const intervalId = setInterval(sendHeight, 2000);
 
     return () => {
       resizeObserver.disconnect();
-      clearTimeout(timeoutId);
-      clearInterval(intervalId);
     };
   }, [devices]);
 
@@ -135,8 +131,9 @@ export default function App() {
   };
 
   return (
-    <div id="app-wrapper" className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans">
-      {/* Top Brand Bar */}
+    <div className="bg-[#F8FAFC] text-slate-900 font-sans overflow-hidden">
+      <div id="app-content-inner">
+        {/* Top Brand Bar */}
       <div className="bg-white px-4 py-5 lg:px-6 border-b border-slate-100">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -349,14 +346,15 @@ export default function App() {
           <p className="text-[14px] text-slate-400 italic">
             Η εκτίμηση είναι ενδεικτική και αφορά μόνο το συνολικό φορτίο σε Watt.
           </p>
-                <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-slate-200 mt-20">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-          <p>© 2026 TESCOM HELLAS</p>
-        </div>
-      </footer>
-        </div>
+          <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-slate-200 mt-20">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+              <p>© 2026 TESCOM HELLAS</p>
+            </div>
+          </footer>
         </div>
       </div>
     </div>
-  );
+  </div>
+</div>
+);
 }
