@@ -18,9 +18,6 @@ import {
 import { DeviceList } from './components/DeviceList';
 
 export default function App() {
-  useEffect(() => {
-    console.log('App component mounted');
-  }, []);
   const [devices, setDevices] = useState<SelectedDevice[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category>('server');
   const [selectedPredefinedId, setSelectedPredefinedId] = useState('');
@@ -30,6 +27,37 @@ export default function App() {
   const [customQty, setCustomQty] = useState<number>(1);
   
   const [safetyMargin, setSafetyMargin] = useState(0.2);
+
+  useEffect(() => {
+    const sendHeight = () => {
+      const wrapper = document.getElementById('app-wrapper');
+      if (wrapper) {
+        // Χρησιμοποιούμε το scrollHeight του wrapper
+        const height = wrapper.scrollHeight;
+        window.parent.postMessage({ type: 'setHeight', height: height }, '*');
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      sendHeight();
+    });
+
+    const wrapper = document.getElementById('app-wrapper');
+    if (wrapper) {
+      resizeObserver.observe(wrapper);
+    }
+    
+    // Αρχική αποστολή και μερικές επαναλήψεις για σιγουριά
+    sendHeight();
+    const timeoutId = setTimeout(sendHeight, 500);
+    const intervalId = setInterval(sendHeight, 2000);
+
+    return () => {
+      resizeObserver.disconnect();
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
+  }, [devices]);
 
   const totalWatts = devices.reduce((sum, d) => sum + (d.watts * d.quantity), 0);
   const netPower = totalWatts * (1 + safetyMargin);
@@ -107,7 +135,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans">
+    <div id="app-wrapper" className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans">
       {/* Top Brand Bar */}
       <div className="bg-white px-4 py-5 lg:px-6 border-b border-slate-100">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
@@ -200,7 +228,7 @@ export default function App() {
             </section>
 
             <section className="space-y-4">
-              <label className="text-[10px] font-black text-slate-400 tracking-widest block">Προσθήκη δικής σας συσκευής</label>
+              <label className="text-[10px] font-black text-slate-400 tracking-widest block">Προσαρμοσμένη είσοδος</label>
               <input
                 type="text"
                 placeholder="Όνομα συσκευής"
@@ -212,7 +240,7 @@ export default function App() {
                 <div className="relative flex-1">
                   <input
                     type="number"
-                    placeholder="Ισχύς σε Watt"
+                    placeholder="Watts"
                     value={customWatts || ''}
                     onChange={(e) => setCustomWatts(Number(e.target.value))}
                     className="w-full h-14 px-5 pr-12 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-[#0971ce] transition-all text-slate-700 font-bold placeholder:text-slate-300"
@@ -285,7 +313,7 @@ export default function App() {
             <div className="flex flex-col gap-3">
           {/* Το νέο Primary Κουμπί */}
         <a 
-         href={`https://tescom-odigos-epilogis-ups.netlify.app/?load=${Math.round(netPower)}`}
+         href={`https://tescom-ups-selector.netlify.app/?load=${Math.round(netPower)}`}
         target="_blank"
         rel="noopener noreferrer"
       className="w-full py-5 bg-[#0971ce] rounded-2xl font-bold text-white flex items-center justify-center gap-3 hover:bg-[#075da9] transition-all shadow-lg shadow-[#0971ce]/20"
