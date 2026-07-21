@@ -32,8 +32,8 @@ export default function App() {
     const sendHeight = () => {
       const content = document.getElementById('app-content-inner');
       if (content) {
-        // Χρησιμοποιούμε το scrollHeight για το πλήρες ύψος και προσθέτουμε 20px περιθώριο
-        const height = content.scrollHeight + 20;
+        // Χρησιμοποιούμε το offsetHeight για ακρίβεια στο περιεχόμενο
+        const height = content.offsetHeight;
         window.parent.postMessage({ type: 'setHeight', height: height }, '*');
       }
     };
@@ -57,7 +57,7 @@ export default function App() {
       resizeObserver.disconnect();
       window.removeEventListener('resize', sendHeight);
     };
-  }, [devices]);
+  }, [devices, safetyMargin]);
 
   const totalWatts = devices.reduce((sum, d) => sum + (d.watts * d.quantity), 0);
   const netPower = totalWatts * (1 + safetyMargin);
