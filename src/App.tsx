@@ -32,8 +32,8 @@ export default function App() {
     const sendHeight = () => {
       const content = document.getElementById('app-content-inner');
       if (content) {
-        // Μετράμε το πραγματικό ύψος του περιεχομένου
-        const height = content.offsetHeight;
+        // Χρησιμοποιούμε το scrollHeight για το πλήρες ύψος και προσθέτουμε 20px περιθώριο
+        const height = content.scrollHeight + 20;
         window.parent.postMessage({ type: 'setHeight', height: height }, '*');
       }
     };
@@ -47,11 +47,15 @@ export default function App() {
       resizeObserver.observe(content);
     }
     
+    // Ακρόαση και για αλλαγή μεγέθους παραθύρου
+    window.addEventListener('resize', sendHeight);
+    
     // Αρχική αποστολή
     sendHeight();
 
     return () => {
       resizeObserver.disconnect();
+      window.removeEventListener('resize', sendHeight);
     };
   }, [devices]);
 
@@ -151,7 +155,8 @@ export default function App() {
             </h1>
           </div>
           <a 
-            href="https://b2b.tescom.gr/odigos-epilogis-ups" 
+            href={`https://b2b.tescom.gr/odigos-epilogis-ups?load=${Math.round(netPower)}`} 
+            target="_parent" 
             className="flex items-center gap-2 text-[10px] sm:text-xs font-bold tracking-widest text-slate-400 hover:text-[#0971ce] transition-all group"
           >
             Οδηγός επιλογής UPS
@@ -308,9 +313,8 @@ export default function App() {
             <div className="flex flex-col gap-3">
           {/* Το νέο Primary Κουμπί */}
         <a 
-         href={`https://b2b.tescom.gr/odigos-epilogis-ups/?load=${Math.round(netPower)}`}
-        target="_blank"
-        rel="noopener noreferrer"
+         href={`https://b2b.tescom.gr/odigos-epilogis-ups?load=${Math.round(netPower)}`}
+        target="_parent"
       className="w-full py-5 bg-[#0971ce] rounded-2xl font-bold text-white flex items-center justify-center gap-3 hover:bg-[#075da9] transition-all shadow-lg shadow-[#0971ce]/20"
   >
        <ExternalLink className="w-4 h-4 text-white/80" />
