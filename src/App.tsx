@@ -141,22 +141,13 @@ export default function App() {
       <div className="bg-white px-4 py-5 lg:px-6 border-b border-slate-100">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
           <div className="flex items-center gap-3 sm:gap-4">
-            <a href="https://b2b.tescom.gr/" target="_blank" rel="noopener noreferrer">
-              <img 
-                src="https://tescom-energy-needs-estimator.netlify.app/logo.png" 
-                alt="TESCOM" 
-                className="h-10 sm:h-14 w-auto object-contain"
-                referrerPolicy="no-referrer"
-              />
-            </a>
-            <div className="h-6 w-px bg-slate-200 hidden sm:block" />
             <h1 className="font-display font-bold text-lg sm:text-xl tracking-tight text-[#0f172a] text-center sm:text-left">
               Εκτίμηση αναγκών <span className="text-[#0971ce]">φορτίου</span>
             </h1>
           </div>
           <a 
             href={`https://b2b.tescom.gr/odigos-epilogis-ups?load=${Math.round(netPower)}`} 
-            target="_parent" 
+            target="_top" 
             className="flex items-center gap-2 text-[10px] sm:text-xs font-bold tracking-widest text-slate-400 hover:text-[#0971ce] transition-all group"
           >
             Οδηγός επιλογής UPS
